@@ -1,6 +1,10 @@
-const { Pool } = require('pg');
+const { Pool, neonConfig } = require('@neondatabase/serverless');
+const ws = require('ws');
 const bcrypt = require('bcryptjs');
 require('dotenv').config();
+
+// Configurar construtor de WebSocket para ambiente Node.js
+neonConfig.webSocketConstructor = ws;
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -9,10 +13,7 @@ if (!connectionString) {
 }
 
 const pool = new Pool({
-  connectionString,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  connectionString
 });
 
 pool.on('connect', () => {
