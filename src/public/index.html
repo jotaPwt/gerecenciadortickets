@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Gerenciamento de Tickets</title>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Estilos customizados -->
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <div id="app">
+    <!-- TELA DE LOGIN / REGISTRO -->
+    <div id="auth-screen" class="auth-container">
+      <div class="auth-box glass-card">
+        <div class="auth-header">
+          <div class="logo-icon">
+            <i data-lucide="ticket"></i>
+          </div>
+          <h1>Gerenciador de Tickets</h1>
+          <p class="subtitle">Acesse sua conta para gerenciar e acompanhar seus chamados</p>
+        </div>
+
+        <div id="auth-tabs" class="tabs">
+          <button class="tab-btn active" onclick="switchAuthTab('login')">Entrar</button>
+          <button class="tab-btn" onclick="switchAuthTab('register')">Cadastrar-se</button>
+        </div>
+
+        <!-- FORMULÁRIO DE LOGIN -->
+        <form id="login-form" class="auth-form active" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label for="login-email">E-mail</label>
+            <div class="input-icon-wrapper">
+              <i data-lucide="mail"></i>
+              <input type="email" id="login-email" placeholder="seu@email.com" required autocomplete="email">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="login-password">Senha</label>
+            <div class="input-icon-wrapper">
+              <i data-lucide="lock"></i>
+              <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">
+            <span>Entrar no Sistema</span>
+            <i data-lucide="arrow-right"></i>
+          </button>
+        </form>
+
+        <!-- FORMULÁRIO DE REGISTRO -->
+        <form id="register-form" class="auth-form" onsubmit="handleRegister(event)">
+          <div class="form-group">
+            <label for="reg-name">Nome Completo</label>
+            <div class="input-icon-wrapper">
+              <i data-lucide="user"></i>
+              <input type="text" id="reg-name" placeholder="Seu Nome" required autocomplete="name">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="reg-email">E-mail</label>
+            <div class="input-icon-wrapper">
+              <i data-lucide="mail"></i>
+              <input type="email" id="reg-email" placeholder="seu@email.com" required autocomplete="email">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="reg-password">Senha</label>
+            <div class="input-icon-wrapper">
+              <i data-lucide="lock"></i>
+              <input type="password" id="reg-password" placeholder="Mínimo de 6 caracteres" minlength="6" required autocomplete="new-password">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">
+            <span>Criar Conta</span>
+            <i data-lucide="user-plus"></i>
+          </button>
+        </form>
+
+        <!-- CREDENCIAIS DE TESTE DICA -->
+        <div class="demo-credentials">
+          <p><strong>💡 Credenciais de Teste:</strong></p>
+          <div class="credentials-grid">
+            <div class="cred-item" onclick="fillCredentials('admin@sistema.com', 'admin123')">
+              <span class="badge badge-admin">👑 Admin</span>
+              <code>admin@sistema.com</code>
+            </div>
+            <div class="cred-item" onclick="fillCredentials('user@sistema.com', 'user123')">
+              <span class="badge badge-user">👤 Usuário</span>
+              <code>user@sistema.com</code>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TELA DO DASHBOARD (LOGADO) -->
+    <div id="dashboard-screen" class="dashboard-container hidden">
+      <!-- HEADER PRINCIPAL -->
+      <header class="main-header glass-card">
+        <div class="header-brand">
+          <div class="logo-icon small">
+            <i data-lucide="ticket"></i>
+          </div>
+          <div>
+            <h2 class="app-title">TicketManager Pro</h2>
+            <span class="version-tag">Neon DB • RBAC</span>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button class="btn btn-icon" id="theme-toggle-btn" title="Alternar Tema" onclick="toggleTheme()">
+            <i data-lucide="sun" id="theme-icon"></i>
+          </button>
+
+          <div class="user-profile-badge">
+            <div class="user-avatar" id="user-avatar">U</div>
+            <div class="user-info">
+              <span class="user-name" id="display-user-name">Usuário</span>
+              <span id="display-user-role" class="badge">Role</span>
+            </div>
+          </div>
+
+          <button class="btn btn-outline" onclick="handleLogout()" title="Sair">
+            <i data-lucide="log-out"></i>
+            <span>Sair</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- CONTEÚDO PRINCIPAL DO DASHBOARD -->
+      <main class="dashboard-content">
+        <!-- SEÇÃO DE ESTATÍSTICAS -->
+        <section class="stats-grid">
+          <div class="stat-card glass-card" onclick="filterByStatus('todos')">
+            <div class="stat-icon icon-total">
+              <i data-lucide="layers"></i>
+            </div>
+            <div class="stat-details">
+              <span class="stat-label">Total de Tickets</span>
+              <h3 class="stat-value" id="stat-total">0</h3>
+            </div>
+          </div>
+
+          <div class="stat-card glass-card" onclick="filterByStatus('Aberto')">
+            <div class="stat-icon icon-aberto">
+              <i data-lucide="clock"></i>
+            </div>
+            <div class="stat-details">
+              <span class="stat-label">Abertos</span>
+              <h3 class="stat-value" id="stat-aberto">0</h3>
+            </div>
+          </div>
+
+          <div class="stat-card glass-card" onclick="filterByStatus('Em Andamento')">
+            <div class="stat-icon icon-andamento">
+              <i data-lucide="refresh-cw"></i>
+            </div>
+            <div class="stat-details">
+              <span class="stat-label">Em Andamento</span>
+              <h3 class="stat-value" id="stat-andamento">0</h3>
+            </div>
+          </div>
+
+          <div class="stat-card glass-card" onclick="filterByStatus('Concluído')">
+            <div class="stat-icon icon-concluido">
+              <i data-lucide="check-circle-2"></i>
+            </div>
+            <div class="stat-details">
+              <span class="stat-label">Concluídos</span>
+              <h3 class="stat-value" id="stat-concluido">0</h3>
+            </div>
+          </div>
+
+          <div class="stat-card glass-card" onclick="filterByStatus('Cancelado')">
+            <div class="stat-icon icon-cancelado">
+              <i data-lucide="x-circle"></i>
+            </div>
+            <div class="stat-details">
+              <span class="stat-label">Cancelados</span>
+              <h3 class="stat-value" id="stat-cancelado">0</h3>
+            </div>
+          </div>
+        </section>
+
+        <!-- BARRA DE AÇÕES E FILTROS -->
+        <div class="action-bar glass-card">
+          <div class="search-filter-group">
+            <div class="input-icon-wrapper search-box">
+              <i data-lucide="search"></i>
+              <input type="text" id="search-input" placeholder="Pesquisar por título ou conteúdo..." oninput="handleSearch()">
+            </div>
+
+            <div class="filter-dropdown">
+              <i data-lucide="filter"></i>
+              <select id="status-filter" onchange="loadTickets()">
+                <option value="todos">Todos os Status</option>
+                <option value="Aberto">Aberto</option>
+                <option value="Em Andamento">Em Andamento</option>
+                <option value="Concluído">Concluído</option>
+                <option value="Cancelado">Cancelado</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="buttons-group">
+            <button class="btn btn-admin hidden" id="admin-users-btn" onclick="openUsersModal()">
+              <i data-lucide="users"></i>
+              <span>Gerenciar Usuários</span>
+            </button>
+
+            <button class="btn btn-primary" onclick="openNewTicketModal()">
+              <i data-lucide="plus"></i>
+              <span>Novo Ticket</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- LISTA DE TICKETS -->
+        <section class="tickets-section">
+          <div class="section-header">
+            <h3 id="tickets-section-title">Todos os Chamados</h3>
+            <span class="counter-badge" id="tickets-count-badge">0 encontrados</span>
+          </div>
+
+          <div id="tickets-grid" class="tickets-grid">
+            <!-- Os cards de ticket serão injetados dinamicamente via JS -->
+          </div>
+
+          <div id="empty-state" class="empty-state glass-card hidden">
+            <i data-lucide="inbox"></i>
+            <h4>Nenhum ticket encontrado</h4>
+            <p>Não existem chamados cadastrados para os filtros selecionados.</p>
+            <button class="btn btn-secondary" onclick="openNewTicketModal()">Criar o primeiro ticket</button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- MODAL DE CRIAR/EDITAR TICKET -->
+    <div id="ticket-modal" class="modal-backdrop hidden" onclick="closeModalOnBackdrop(event, 'ticket-modal')">
+      <div class="modal-card glass-card">
+        <div class="modal-header">
+          <h3 id="modal-ticket-title"><i data-lucide="ticket"></i> Novo Ticket</h3>
+          <button class="btn-close" onclick="closeModal('ticket-modal')"><i data-lucide="x"></i></button>
+        </div>
+        <form id="ticket-form" onsubmit="handleSaveTicket(event)">
+          <input type="hidden" id="ticket-id">
+          <div class="form-group">
+            <label for="ticket-title-input">Título do Ticket</label>
+            <input type="text" id="ticket-title-input" placeholder="Ex: Problema no acesso ao sistema" required>
+          </div>
+          <div class="form-group">
+            <label for="ticket-desc-input">Descrição Detalhada</label>
+            <textarea id="ticket-desc-input" rows="5" placeholder="Descreva em detalhes a sua solicitação ou problema..." required></textarea>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('ticket-modal')">Cancelar</button>
+            <button type="submit" class="btn btn-primary">
+              <i data-lucide="save"></i>
+              <span>Salvar Ticket</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL DE VISUALIZAÇÃO DE DETALHES -->
+    <div id="detail-modal" class="modal-backdrop hidden" onclick="closeModalOnBackdrop(event, 'detail-modal')">
+      <div class="modal-card glass-card detail-modal-card">
+        <div class="modal-header">
+          <h3><i data-lucide="file-text"></i> Detalhes do Chamado #<span id="detail-id"></span></h3>
+          <button class="btn-close" onclick="closeModal('detail-modal')"><i data-lucide="x"></i></button>
+        </div>
+        <div class="detail-body">
+          <div class="detail-top-bar">
+            <span id="detail-status-badge" class="badge">Aberto</span>
+            <span class="detail-date" id="detail-date">Criado em: --/--/----</span>
+          </div>
+          <h2 id="detail-title">Título do Chamado</h2>
+          <div class="detail-author-box">
+            <i data-lucide="user"></i>
+            <div>
+              <strong id="detail-author-name">Autor</strong>
+              <small id="detail-author-email">email@sistema.com</small>
+            </div>
+          </div>
+          <div class="detail-desc-box">
+            <h4>Descrição:</h4>
+            <p id="detail-desc">Conteúdo da descrição...</p>
+          </div>
+
+          <!-- Controle de Alteração de Status (Visível para Admin / Autor) -->
+          <div class="status-change-box" id="status-change-container">
+            <h4>Alterar Status do Chamado:</h4>
+            <div class="status-buttons">
+              <button class="btn-status btn-status-aberto" onclick="changeTicketStatus('Aberto')">Aberto</button>
+              <button class="btn-status btn-status-andamento" onclick="changeTicketStatus('Em Andamento')">Em Andamento</button>
+              <button class="btn-status btn-status-concluido" onclick="changeTicketStatus('Concluído')">Concluído</button>
+              <button class="btn-status btn-status-cancelado" onclick="changeTicketStatus('Cancelado')">Cancelado</button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('detail-modal')">Fechar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE GESTÃO DE USUÁRIOS (ADMIN ONLY) -->
+    <div id="users-modal" class="modal-backdrop hidden" onclick="closeModalOnBackdrop(event, 'users-modal')">
+      <div class="modal-card glass-card large-modal">
+        <div class="modal-header">
+          <h3><i data-lucide="users"></i> Gerenciamento de Usuários (Painel Admin)</h3>
+          <button class="btn-close" onclick="closeModal('users-modal')"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body">
+
+          <!-- FORMULÁRIO DE NOVO USUÁRIO PELO ADMIN -->
+          <div class="admin-create-user-box glass-card">
+            <h4><i data-lucide="user-plus"></i> Cadastrar Novo Usuário</h4>
+            <form id="admin-create-user-form" class="user-inline-form" onsubmit="handleAdminCreateUser(event)">
+              <input type="text" id="admin-new-name" placeholder="Nome completo" required>
+              <input type="email" id="admin-new-email" placeholder="E-mail" required>
+              <input type="password" id="admin-new-password" placeholder="Senha" required minlength="6">
+              <select id="admin-new-role">
+                <option value="user">Usuário Comum</option>
+                <option value="admin">Administrador</option>
+              </select>
+              <button type="submit" class="btn btn-primary">Cadastrar</button>
+            </form>
+          </div>
+
+          <!-- TABELA DE USUÁRIOS -->
+          <div class="table-responsive">
+            <table class="users-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nome</th>
+                  <th>E-mail</th>
+                  <th>Perfil / Cargo</th>
+                  <th>Tickets</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="users-table-body">
+                <!-- Linhas dos usuários -->
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('users-modal')">Fechar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST DE NOTIFICAÇÃO -->
+    <div id="toast-container" class="toast-container"></div>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
