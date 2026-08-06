@@ -1,10 +1,9 @@
 /* ==========================================================================
-   SISTEMA DE GERENCIAMENTO DE TICKETS - LÓGICA DO FRONTEND (APP.JS)
+   TICKETMANAGER PRO - FRONTEND LOGIC (STITCH DESIGN INTEGRATED)
    ========================================================================== */
 
 const API_BASE = '/api';
 
-// Estado global da aplicação
 let state = {
   token: localStorage.getItem('ticket_token') || null,
   user: JSON.parse(localStorage.getItem('ticket_user') || 'null'),
@@ -14,33 +13,35 @@ let state = {
   searchQuery: ''
 };
 
-// Inicialização da aplicação
 document.addEventListener('DOMContentLoaded', () => {
-  initLucideIcons();
   checkAuth();
 });
 
-function initLucideIcons() {
-  if (window.lucide) {
-    lucide.createIcons();
-  }
-}
-
 // Alternar abas de Login/Registro
 function switchAuthTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-  document.querySelectorAll('.auth-form').forEach(form => form.classList.remove('active'));
+  const loginTab = document.getElementById('tab-login');
+  const regTab = document.getElementById('tab-register');
+  const loginForm = document.getElementById('login-form');
+  const regForm = document.getElementById('register-form');
 
   if (tab === 'login') {
-    document.querySelectorAll('.tab-btn')[0].classList.add('active');
-    document.getElementById('login-form').classList.add('active');
+    loginTab.className = 'flex-1 pb-3 text-center border-b-2 border-primary text-primary font-semibold text-sm transition-colors';
+    regTab.className = 'flex-1 pb-3 text-center text-on-surface-variant hover:text-on-surface font-semibold text-sm transition-colors';
+    loginForm.classList.remove('hidden');
+    loginForm.classList.add('flex');
+    regForm.classList.add('hidden');
+    regForm.classList.remove('flex');
   } else {
-    document.querySelectorAll('.tab-btn')[1].classList.add('active');
-    document.getElementById('register-form').classList.add('active');
+    regTab.className = 'flex-1 pb-3 text-center border-b-2 border-primary text-primary font-semibold text-sm transition-colors';
+    loginTab.className = 'flex-1 pb-3 text-center text-on-surface-variant hover:text-on-surface font-semibold text-sm transition-colors';
+    regForm.classList.remove('hidden');
+    regForm.classList.add('flex');
+    loginForm.classList.add('hidden');
+    loginForm.classList.remove('flex');
   }
 }
 
-// Preencher credenciais de teste ao clicar na dica
+// Preencher credenciais de teste
 function fillCredentials(email, password) {
   switchAuthTab('login');
   document.getElementById('login-email').value = email;
@@ -68,27 +69,27 @@ async function checkAuth() {
       handleLogout();
     }
   } catch (err) {
-    console.error('Erro ao verificar sessão:', err);
+    console.error('Erro ao verificar autenticação:', err);
     showAuthScreen();
   }
 }
 
-// Exibir Tela de Login
 function showAuthScreen() {
   document.getElementById('auth-screen').classList.remove('hidden');
   document.getElementById('dashboard-screen').classList.add('hidden');
+  document.getElementById('dashboard-screen').classList.remove('flex');
 }
 
-// Exibir Tela de Dashboard
 function showDashboardScreen() {
   document.getElementById('auth-screen').classList.add('hidden');
   document.getElementById('dashboard-screen').classList.remove('hidden');
+  document.getElementById('dashboard-screen').classList.add('flex');
 
-  // Atualizar informações do usuário logado
   const avatar = document.getElementById('user-avatar');
   const nameEl = document.getElementById('display-user-name');
   const roleEl = document.getElementById('display-user-role');
   const adminUsersBtn = document.getElementById('admin-users-btn');
+  const navUsersLink = document.getElementById('nav-users-link');
 
   if (state.user) {
     avatar.textContent = state.user.name.charAt(0).toUpperCase();
@@ -96,19 +97,20 @@ function showDashboardScreen() {
 
     if (state.user.role === 'admin') {
       roleEl.textContent = '👑 Admin';
-      roleEl.className = 'badge badge-admin';
-      adminUsersBtn.classList.remove('hidden');
+      roleEl.className = 'text-[10px] text-primary uppercase font-bold tracking-wider leading-none mt-0.5';
+      if (adminUsersBtn) adminUsersBtn.classList.remove('hidden');
+      if (navUsersLink) navUsersLink.classList.remove('hidden');
     } else {
       roleEl.textContent = '👤 Usuário';
-      roleEl.className = 'badge badge-user';
-      adminUsersBtn.classList.add('hidden');
+      roleEl.className = 'text-[10px] text-secondary uppercase font-bold tracking-wider leading-none mt-0.5';
+      if (adminUsersBtn) adminUsersBtn.classList.add('hidden');
+      if (navUsersLink) navUsersLink.classList.add('hidden');
     }
   }
 
   loadDashboardData();
 }
 
-// Carregar Dados do Dashboard (Stats + Tickets)
 async function loadDashboardData() {
   await Promise.all([loadStats(), loadTickets()]);
 }
@@ -137,11 +139,10 @@ async function handleLogin(e) {
       showToast('Login realizado com sucesso!', 'success');
       showDashboardScreen();
     } else {
-      showToast(data.error || 'Erro ao realizar login.', 'error');
+      showToast(data.error || 'Erro no login.', 'error');
     }
   } catch (err) {
-    console.error('Erro na requisição de login:', err);
-    showToast('Erro de conexão com o servidor.', 'error');
+    showToast('Erro ao conectar ao servidor.', 'error');
   }
 }
 
@@ -173,18 +174,16 @@ async function handleRegister(e) {
       showToast(data.error || 'Erro ao criar conta.', 'error');
     }
   } catch (err) {
-    console.error('Erro no registro:', err);
-    showToast('Erro de conexão ao criar conta.', 'error');
+    showToast('Erro de conexão ao registrar.', 'error');
   }
 }
 
-// Logout
 function handleLogout() {
   state.token = null;
   state.user = null;
   localStorage.removeItem('ticket_token');
   localStorage.removeItem('ticket_user');
-  showToast('Sessão encerrada.', 'success');
+  showToast('Sessão encerrada com sucesso.', 'info');
   showAuthScreen();
 }
 
@@ -203,7 +202,6 @@ async function loadStats() {
       document.getElementById('stat-aberto').textContent = stats.abertos;
       document.getElementById('stat-andamento').textContent = stats.em_andamento;
       document.getElementById('stat-concluido').textContent = stats.concluidos;
-      document.getElementById('stat-cancelado').textContent = stats.cancelados;
     }
   } catch (err) {
     console.error('Erro ao carregar estatísticas:', err);
@@ -234,18 +232,15 @@ async function loadTickets() {
       renderTickets();
     }
   } catch (err) {
-    console.error('Erro ao carregar tickets:', err);
-    showToast('Erro ao carregar lista de tickets.', 'error');
+    console.error('Erro ao buscar tickets:', err);
   }
 }
 
-// Filtrar ao clicar nos cards de estatística
 function filterByStatus(status) {
   document.getElementById('status-filter').value = status;
   loadTickets();
 }
 
-// Busca ao digitar
 function handleSearch() {
   loadTickets();
 }
@@ -268,50 +263,52 @@ function renderTickets() {
   if (state.tickets.length === 0) {
     grid.innerHTML = '';
     emptyState.classList.remove('hidden');
+    emptyState.classList.add('flex');
     return;
   }
 
   emptyState.classList.add('hidden');
+  emptyState.classList.remove('flex');
 
   grid.innerHTML = state.tickets.map(ticket => {
     const dateFormatted = new Date(ticket.created_at).toLocaleDateString('pt-BR', {
-      day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+      day: '2-digit', month: '2-digit', year: 'numeric'
     });
 
-    const statusBadgeClass = getStatusBadgeClass(ticket.status);
+    const statusBadge = getStatusBadgeHTML(ticket.status);
 
     return `
-      <div class="ticket-card glass-card">
+      <div class="bg-surface border border-outline rounded-xl p-5 flex flex-col justify-between ticket-card-hover">
         <div>
-          <div class="ticket-header">
-            <span class="ticket-id">#${ticket.id}</span>
-            <span class="badge ${statusBadgeClass}">${ticket.status}</span>
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <span class="text-xs font-bold text-on-surface-variant/70 font-mono">#${ticket.id}</span>
+            ${statusBadge}
           </div>
 
-          <h4 class="ticket-title">${escapeHtml(ticket.title)}</h4>
-          <p class="ticket-desc-snippet">${escapeHtml(ticket.description)}</p>
+          <h4 class="text-base font-bold text-on-surface mb-2 line-clamp-1">${escapeHtml(ticket.title)}</h4>
+          <p class="text-xs text-on-surface-variant line-clamp-3 mb-4 leading-relaxed">${escapeHtml(ticket.description)}</p>
         </div>
 
         <div>
-          <div class="ticket-meta">
-            <div class="ticket-author">
-              <i data-lucide="user"></i>
-              <span>${escapeHtml(ticket.author_name)}</span>
+          <div class="flex items-center justify-between pt-3 border-t border-outline text-[11px] text-on-surface-variant">
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-sm text-primary">person</span>
+              <span class="font-medium">${escapeHtml(ticket.author_name)}</span>
             </div>
             <span>${dateFormatted}</span>
           </div>
 
-          <div class="ticket-actions">
-            <button class="btn btn-secondary" onclick="openDetailModal(${ticket.id})">
-              <i data-lucide="eye"></i> Ver Detalhes
+          <div class="flex items-center gap-2 mt-3 pt-2">
+            <button class="flex-1 bg-surface-container border border-outline hover:border-primary text-on-surface text-xs font-semibold py-1.5 rounded-lg flex items-center justify-center gap-1 transition-colors" onclick="openDetailModal(${ticket.id})">
+              <span class="material-symbols-outlined text-sm">visibility</span> Detalhes
             </button>
 
             ${(state.user.role === 'admin' || ticket.author_id === state.user.id) ? `
-              <button class="btn btn-outline" onclick="openEditTicketModal(${ticket.id})">
-                <i data-lucide="edit-3"></i>
+              <button class="p-1.5 border border-outline hover:border-primary text-on-surface-variant hover:text-on-surface rounded-lg transition-colors" onclick="openEditTicketModal(${ticket.id})" title="Editar">
+                <span class="material-symbols-outlined text-base">edit</span>
               </button>
-              <button class="btn btn-outline" onclick="deleteTicket(${ticket.id})">
-                <i data-lucide="trash-2"></i>
+              <button class="p-1.5 border border-outline hover:border-rose-500 text-on-surface-variant hover:text-rose-400 rounded-lg transition-colors" onclick="deleteTicket(${ticket.id})" title="Excluir">
+                <span class="material-symbols-outlined text-base">delete</span>
               </button>
             ` : ''}
           </div>
@@ -319,17 +316,20 @@ function renderTickets() {
       </div>
     `;
   }).join('');
-
-  initLucideIcons();
 }
 
-function getStatusBadgeClass(status) {
+function getStatusBadgeHTML(status) {
   switch (status) {
-    case 'Aberto': return 'badge-aberto';
-    case 'Em Andamento': return 'badge-andamento';
-    case 'Concluído': return 'badge-concluido';
-    case 'Cancelado': return 'badge-cancelado';
-    default: return 'badge-aberto';
+    case 'Aberto':
+      return `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30">Aberto</span>`;
+    case 'Em Andamento':
+      return `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-500/15 text-blue-400 border border-blue-500/30">Em Andamento</span>`;
+    case 'Concluído':
+      return `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Concluído</span>`;
+    case 'Cancelado':
+      return `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-500/15 text-rose-400 border border-rose-500/30">Cancelado</span>`;
+    default:
+      return `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-surface-container text-on-surface-variant border border-outline">${status}</span>`;
   }
 }
 
@@ -338,10 +338,9 @@ function openNewTicketModal() {
   document.getElementById('ticket-id').value = '';
   document.getElementById('ticket-title-input').value = '';
   document.getElementById('ticket-desc-input').value = '';
-  document.getElementById('modal-ticket-title').innerHTML = '<i data-lucide="ticket"></i> Criar Novo Ticket';
+  document.getElementById('modal-ticket-title').innerHTML = `<span class="material-symbols-outlined text-primary">confirmation_number</span> Criar Novo Ticket`;
 
   document.getElementById('ticket-modal').classList.remove('hidden');
-  initLucideIcons();
 }
 
 // Abrir Modal de Editar Ticket
@@ -352,13 +351,12 @@ function openEditTicketModal(ticketId) {
   document.getElementById('ticket-id').value = ticket.id;
   document.getElementById('ticket-title-input').value = ticket.title;
   document.getElementById('ticket-desc-input').value = ticket.description;
-  document.getElementById('modal-ticket-title').innerHTML = '<i data-lucide="edit-3"></i> Editar Ticket #' + ticket.id;
+  document.getElementById('modal-ticket-title').innerHTML = `<span class="material-symbols-outlined text-primary">edit</span> Editar Ticket #${ticket.id}`;
 
   document.getElementById('ticket-modal').classList.remove('hidden');
-  initLucideIcons();
 }
 
-// Salvar Ticket (Criar ou Atualizar)
+// Salvar Ticket
 async function handleSaveTicket(e) {
   e.preventDefault();
   const id = document.getElementById('ticket-id').value;
@@ -381,21 +379,20 @@ async function handleSaveTicket(e) {
     const data = await res.json();
 
     if (res.ok) {
-      showToast(id ? 'Ticket atualizado com sucesso!' : 'Ticket criado com sucesso!', 'success');
+      showToast(id ? 'Ticket atualizado!' : 'Ticket criado com sucesso!', 'success');
       closeModal('ticket-modal');
       loadDashboardData();
     } else {
       showToast(data.error || 'Erro ao salvar ticket.', 'error');
     }
   } catch (err) {
-    console.error('Erro ao salvar ticket:', err);
-    showToast('Erro de conexão ao salvar ticket.', 'error');
+    showToast('Erro ao conectar ao servidor.', 'error');
   }
 }
 
 // Excluir Ticket
 async function deleteTicket(ticketId) {
-  if (!confirm(`Tem certeza de que deseja excluir o ticket #${ticketId}?`)) return;
+  if (!confirm(`Confirma a exclusão do ticket #${ticketId}?`)) return;
 
   try {
     const res = await fetch(`${API_BASE}/tickets/${ticketId}`, {
@@ -411,8 +408,7 @@ async function deleteTicket(ticketId) {
       showToast(data.error || 'Erro ao excluir ticket.', 'error');
     }
   } catch (err) {
-    console.error('Erro ao excluir ticket:', err);
-    showToast('Erro de conexão ao excluir ticket.', 'error');
+    showToast('Erro de conexão.', 'error');
   }
 }
 
@@ -440,18 +436,16 @@ async function openDetailModal(ticketId) {
       document.getElementById('detail-date').textContent = `Criado em: ${dateFormatted}`;
 
       const badgeEl = document.getElementById('detail-status-badge');
-      badgeEl.textContent = ticket.status;
-      badgeEl.className = `badge ${getStatusBadgeClass(ticket.status)}`;
+      badgeEl.outerHTML = `<div id="detail-status-badge">${getStatusBadgeHTML(ticket.status)}</div>`;
 
       document.getElementById('detail-modal').classList.remove('hidden');
-      initLucideIcons();
     }
   } catch (err) {
-    console.error('Erro ao buscar detalhes do ticket:', err);
+    console.error('Erro ao buscar detalhes:', err);
   }
 }
 
-// Alterar Status do Ticket no Modal de Detalhes
+// Alterar Status no Modal
 async function changeTicketStatus(newStatus) {
   if (!state.currentTicketId) return;
 
@@ -466,7 +460,7 @@ async function changeTicketStatus(newStatus) {
     });
 
     if (res.ok) {
-      showToast(`Status alterado para "${newStatus}"!`, 'success');
+      showToast(`Status atualizado para "${newStatus}"!`, 'success');
       openDetailModal(state.currentTicketId);
       loadDashboardData();
     } else {
@@ -474,21 +468,18 @@ async function changeTicketStatus(newStatus) {
       showToast(data.error || 'Erro ao alterar status.', 'error');
     }
   } catch (err) {
-    console.error('Erro ao alterar status:', err);
-    showToast('Erro de conexão ao alterar status.', 'error');
+    showToast('Erro ao atualizar status.', 'error');
   }
 }
 
-// Abrir Modal de Gestão de Usuários (Admin)
+// Gestão de Usuários (Admin)
 async function openUsersModal() {
   if (state.user.role !== 'admin') return;
 
   document.getElementById('users-modal').classList.remove('hidden');
   loadUsersList();
-  initLucideIcons();
 }
 
-// Carregar Lista de Usuários (Admin)
 async function loadUsersList() {
   try {
     const res = await fetch(`${API_BASE}/users`, {
@@ -500,35 +491,32 @@ async function loadUsersList() {
       const tbody = document.getElementById('users-table-body');
 
       tbody.innerHTML = data.users.map(u => `
-        <tr>
-          <td>#${u.id}</td>
-          <td><strong>${escapeHtml(u.name)}</strong></td>
-          <td>${escapeHtml(u.email)}</td>
-          <td>
-            <select onchange="updateUserRole(${u.id}, this.value)" ${u.id === state.user.id ? 'disabled' : ''}>
+        <tr class="hover:bg-surface-variant/30 transition-colors">
+          <td class="p-3 font-mono text-on-surface-variant">#${u.id}</td>
+          <td class="p-3 font-semibold text-on-surface">${escapeHtml(u.name)}</td>
+          <td class="p-3 text-on-surface-variant font-mono">${escapeHtml(u.email)}</td>
+          <td class="p-3">
+            <select class="bg-surface border border-outline rounded text-xs py-1 px-2 text-on-surface font-medium cursor-pointer" onchange="updateUserRole(${u.id}, this.value)" ${u.id === state.user.id ? 'disabled' : ''}>
               <option value="user" ${u.role === 'user' ? 'selected' : ''}>Usuário Comum</option>
               <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Administrador</option>
             </select>
           </td>
-          <td>${u.ticket_count} ticket(s)</td>
-          <td>
+          <td class="p-3 text-on-surface-variant">${u.ticket_count} ticket(s)</td>
+          <td class="p-3 text-right">
             ${u.id !== state.user.id ? `
-              <button class="btn btn-outline" onclick="deleteUser(${u.id})" title="Excluir Usuário">
-                <i data-lucide="trash-2"></i>
+              <button class="p-1 text-on-surface-variant hover:text-rose-400 transition-colors" onclick="deleteUser(${u.id})" title="Excluir Usuário">
+                <span class="material-symbols-outlined text-base">delete</span>
               </button>
-            ` : '<span class="text-muted">(Você)</span>'}
+            ` : '<span class="text-on-surface-variant/50 text-[10px]">(Você)</span>'}
           </td>
         </tr>
       `).join('');
-
-      initLucideIcons();
     }
   } catch (err) {
     console.error('Erro ao listar usuários:', err);
   }
 }
 
-// Criar Usuário pelo Admin
 async function handleAdminCreateUser(e) {
   e.preventDefault();
   const name = document.getElementById('admin-new-name').value;
@@ -549,19 +537,17 @@ async function handleAdminCreateUser(e) {
     const data = await res.json();
 
     if (res.ok) {
-      showToast('Usuário cadastrado com sucesso!', 'success');
+      showToast('Novo usuário cadastrado!', 'success');
       document.getElementById('admin-create-user-form').reset();
       loadUsersList();
     } else {
       showToast(data.error || 'Erro ao criar usuário.', 'error');
     }
   } catch (err) {
-    console.error('Erro ao criar usuário:', err);
-    showToast('Erro ao criar usuário.', 'error');
+    showToast('Erro de conexão.', 'error');
   }
 }
 
-// Alterar Cargo de Usuário (Admin)
 async function updateUserRole(userId, newRole) {
   try {
     const res = await fetch(`${API_BASE}/users/${userId}/role`, {
@@ -574,7 +560,7 @@ async function updateUserRole(userId, newRole) {
     });
 
     if (res.ok) {
-      showToast('Cargo atualizado com sucesso!', 'success');
+      showToast('Cargo atualizado!', 'success');
       loadUsersList();
     } else {
       const data = await res.json();
@@ -585,9 +571,8 @@ async function updateUserRole(userId, newRole) {
   }
 }
 
-// Excluir Usuário (Admin)
 async function deleteUser(userId) {
-  if (!confirm('Deseja realmente excluir este usuário? Todos os tickets associados também serão excluídos.')) return;
+  if (!confirm('Deseja realmente excluir este usuário? Todos os seus tickets serão removidos.')) return;
 
   try {
     const res = await fetch(`${API_BASE}/users/${userId}`, {
@@ -596,7 +581,7 @@ async function deleteUser(userId) {
     });
 
     if (res.ok) {
-      showToast('Usuário excluído com sucesso.', 'success');
+      showToast('Usuário excluído.', 'success');
       loadUsersList();
     } else {
       const data = await res.json();
@@ -607,42 +592,32 @@ async function deleteUser(userId) {
   }
 }
 
-// Alternar Tema Escuro / Claro
-function toggleTheme() {
-  const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', newTheme);
-
-  const icon = document.getElementById('theme-icon');
-  if (icon) {
-    icon.setAttribute('data-lucide', newTheme === 'dark' ? 'sun' : 'moon');
-    initLucideIcons();
-  }
-}
-
-// Utilitários de Modal
+// Utilitários de Modal & Toast
 function closeModal(modalId) {
   document.getElementById(modalId).classList.add('hidden');
 }
 
 function closeModalOnBackdrop(e, modalId) {
-  if (e.target.classList.contains('modal-backdrop')) {
+  if (e.target.id === modalId) {
     closeModal(modalId);
   }
 }
 
-// Notificações Toast
 function showToast(message, type = 'info') {
   const container = document.getElementById('toast-container');
   const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`;
+  
+  let typeBg = 'bg-surface-container border-primary text-primary';
+  if (type === 'error') typeBg = 'bg-surface-container border-rose-500 text-rose-400';
+  if (type === 'success') typeBg = 'bg-surface-container border-emerald-500 text-emerald-400';
+
+  toast.className = `toast-item pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl border shadow-xl text-xs font-semibold ${typeBg}`;
   toast.innerHTML = `
-    <i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}"></i>
+    <span class="material-symbols-outlined text-base">${type === 'success' ? 'check_circle' : 'info'}</span>
     <span>${escapeHtml(message)}</span>
   `;
 
   container.appendChild(toast);
-  initLucideIcons();
 
   setTimeout(() => {
     toast.remove();
