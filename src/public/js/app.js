@@ -278,10 +278,10 @@ function renderTickets() {
     const statusBadge = getStatusBadgeHTML(ticket.status);
 
     return `
-      <div class="bg-surface border border-outline rounded-xl p-5 flex flex-col justify-between ticket-card-hover">
+      <div class="bg-surface border border-outline rounded-2xl p-5 flex flex-col justify-between ticket-card-hover shadow-sm">
         <div>
           <div class="flex items-center justify-between gap-2 mb-3">
-            <span class="text-xs font-bold text-on-surface-variant/70 font-mono">#${ticket.id}</span>
+            <span class="text-xs font-bold text-on-surface-variant/80 font-mono">#${ticket.id}</span>
             ${statusBadge}
           </div>
 
@@ -299,15 +299,15 @@ function renderTickets() {
           </div>
 
           <div class="flex items-center gap-2 mt-3 pt-2">
-            <button class="flex-1 bg-surface-container border border-outline hover:border-primary text-on-surface text-xs font-semibold py-1.5 rounded-lg flex items-center justify-center gap-1 transition-colors" onclick="openDetailModal(${ticket.id})">
+            <button class="flex-1 bg-surface-container border border-outline hover:border-primary hover:text-primary text-on-surface text-xs font-semibold py-1.5 rounded-lg flex items-center justify-center gap-1 transition-colors" onclick="openDetailModal(${ticket.id})">
               <span class="material-symbols-outlined text-sm">visibility</span> Detalhes
             </button>
 
             ${(state.user.role === 'admin' || ticket.author_id === state.user.id) ? `
-              <button class="p-1.5 border border-outline hover:border-primary text-on-surface-variant hover:text-on-surface rounded-lg transition-colors" onclick="openEditTicketModal(${ticket.id})" title="Editar">
+              <button class="p-1.5 border border-outline hover:border-primary hover:text-primary text-on-surface-variant rounded-lg transition-colors" onclick="openEditTicketModal(${ticket.id})" title="Editar">
                 <span class="material-symbols-outlined text-base">edit</span>
               </button>
-              <button class="p-1.5 border border-outline hover:border-rose-500 text-on-surface-variant hover:text-rose-400 rounded-lg transition-colors" onclick="deleteTicket(${ticket.id})" title="Excluir">
+              <button class="p-1.5 border border-outline hover:border-rose-300 hover:text-rose-600 text-on-surface-variant rounded-lg transition-colors" onclick="deleteTicket(${ticket.id})" title="Excluir">
                 <span class="material-symbols-outlined text-base">delete</span>
               </button>
             ` : ''}
@@ -321,13 +321,13 @@ function renderTickets() {
 function getStatusBadgeHTML(status) {
   switch (status) {
     case 'Aberto':
-      return `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30">Aberto</span>`;
+      return `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">Aberto</span>`;
     case 'Em Andamento':
-      return `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-500/15 text-blue-400 border border-blue-500/30">Em Andamento</span>`;
+      return `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">Em Andamento</span>`;
     case 'Concluído':
-      return `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Concluído</span>`;
+      return `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">Concluído</span>`;
     case 'Cancelado':
-      return `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-500/15 text-rose-400 border border-rose-500/30">Cancelado</span>`;
+      return `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200">Cancelado</span>`;
     default:
       return `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-surface-container text-on-surface-variant border border-outline">${status}</span>`;
   }
@@ -491,12 +491,12 @@ async function loadUsersList() {
       const tbody = document.getElementById('users-table-body');
 
       tbody.innerHTML = data.users.map(u => `
-        <tr class="hover:bg-surface-variant/30 transition-colors">
+        <tr class="hover:bg-slate-50 transition-colors">
           <td class="p-3 font-mono text-on-surface-variant">#${u.id}</td>
           <td class="p-3 font-semibold text-on-surface">${escapeHtml(u.name)}</td>
           <td class="p-3 text-on-surface-variant font-mono">${escapeHtml(u.email)}</td>
           <td class="p-3">
-            <select class="bg-surface border border-outline rounded text-xs py-1 px-2 text-on-surface font-medium cursor-pointer" onchange="updateUserRole(${u.id}, this.value)" ${u.id === state.user.id ? 'disabled' : ''}>
+            <select class="bg-surface border border-outline rounded-lg text-xs py-1 px-2 text-on-surface font-medium cursor-pointer focus:outline-none focus:border-primary" onchange="updateUserRole(${u.id}, this.value)" ${u.id === state.user.id ? 'disabled' : ''}>
               <option value="user" ${u.role === 'user' ? 'selected' : ''}>Usuário Comum</option>
               <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Administrador</option>
             </select>
@@ -504,7 +504,7 @@ async function loadUsersList() {
           <td class="p-3 text-on-surface-variant">${u.ticket_count} ticket(s)</td>
           <td class="p-3 text-right">
             ${u.id !== state.user.id ? `
-              <button class="p-1 text-on-surface-variant hover:text-rose-400 transition-colors" onclick="deleteUser(${u.id})" title="Excluir Usuário">
+              <button class="p-1 text-on-surface-variant hover:text-rose-600 transition-colors" onclick="deleteUser(${u.id})" title="Excluir Usuário">
                 <span class="material-symbols-outlined text-base">delete</span>
               </button>
             ` : '<span class="text-on-surface-variant/50 text-[10px]">(Você)</span>'}
@@ -607,11 +607,11 @@ function showToast(message, type = 'info') {
   const container = document.getElementById('toast-container');
   const toast = document.createElement('div');
   
-  let typeBg = 'bg-surface-container border-primary text-primary';
-  if (type === 'error') typeBg = 'bg-surface-container border-rose-500 text-rose-400';
-  if (type === 'success') typeBg = 'bg-surface-container border-emerald-500 text-emerald-400';
+  let typeBg = 'bg-white border-primary/40 text-primary shadow-xl ring-1 ring-black/5';
+  if (type === 'error') typeBg = 'bg-white border-rose-300 text-rose-600 shadow-xl ring-1 ring-black/5';
+  if (type === 'success') typeBg = 'bg-white border-emerald-300 text-emerald-600 shadow-xl ring-1 ring-black/5';
 
-  toast.className = `toast-item pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl border shadow-xl text-xs font-semibold ${typeBg}`;
+  toast.className = `toast-item pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl border ${typeBg} text-xs font-semibold`;
   toast.innerHTML = `
     <span class="material-symbols-outlined text-base">${type === 'success' ? 'check_circle' : 'info'}</span>
     <span>${escapeHtml(message)}</span>
